@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Фитнес тренер</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <aside class="popups">
+      <div id="addClientPopup" class="popup">
+        <h2>Добавить клиента</h2>
+        <form id="addClientForm">
+          <label for="lastName">Фамилия:</label><br>
+          <input type="text" id="lastName" name="lastName" required><br>
+          <label for="firstName">Имя:</label><br>
+          <input type="text" id="firstName" name="firstName" required><br>
+          <label for="paymentType">Вид платежа:</label><br>
+          <select id="paymentType" name="paymentType">
+            <option value="direct">Прямой</option>
+            <option value="block">Блок</option>
+          </select><br><br>
+          <button type="submit">Добавить</button>
+        </form>
+      </div>
+
+      <div id="addWorkoutPopup" class="popup">
+        <h2>Провести тренировку</h2>
+        <form id="addWorkoutForm">
+          <label for="workoutClient">Фамилия клиента:</label><br>
+          <select id="workoutClient" name="workoutClient" required>
+          </select><br>
+          <label for="workoutDate">Дата:</label><br>
+          <input type="date" id="workoutDate" name="workoutDate" required><br>
+          <label for="workoutTime">Время:</label><br>
+          <input type="time" id="workoutTime" name="workoutTime" required><br><br>
+          <button type="submit">Провести</button>
+        </form>
+      </div>
+
+      <div id="addPaymentPopup" class="popup">
+        <h2>Добавить платёж</h2>
+        <form id="addPaymentForm">
+          <label for="paymentClient">Фамилия клиента:</label><br>
+          <select id="paymentClient" name="paymentClient" required>
+          </select><br>
+          <label for="paymentDate">Дата:</label><br>
+          <input type="date" id="paymentDate" name="paymentDate" required><br>
+          <label for="paymentType">Вид платежа:</label><br>
+          <select id="paymentTypeAdd" name="paymentType">
+            <option value="direct">Прямой</option>
+            <option value="block">Блок</option>
+          </select><br><br>
+          <label for="paymentAmount">Сумма/Кол-во:</label><br>
+          <input type="number" id="paymentAmount" name="paymentAmount" required><br><br>
+          <button type="submit">Добавить</button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <h1>Учёт клиентов и финансов</h1>
+      <div class="tables">
+        <div class="table-container">
+          <h2>Клиенты</h2>
+          <button id="addClientBtn">Добавить клиента</button>
+          <table id="clientTable">
+            <thead>
+              <tr>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Вид платежа</th>
+                <th>Остаток на счету</th>
+                <th></th> </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container">
+          <h2>Тренировки</h2>
+          <button id="addWorkoutBtn">Провести тренировку</button>
+          <table id="workoutTable">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Фамилия</th>
+                <th>Тренировка проведена</th>
+                <th></th> </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container">
+          <h2>Платежи</h2>
+          <button id="addPaymentBtn">Добавить платёж</button>
+          <div class="table-container">
+            <label for="workoutCost">Стоимость одной тренировки:</label>
+            <input type="number" id="workoutCost" name="workoutCost" value="0"> 
+          </div>
+          <table id="paymentTable">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Фамилия</th>
+                <th>Вид платежа</th>
+                <th>Сумма/Кол-во</th>
+                <th></th> 
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
