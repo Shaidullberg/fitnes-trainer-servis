@@ -88,7 +88,6 @@ function renderClientsTable() {
     });
 }
 
-
 function updateClientSelects() {
     workoutClientSelect.innerHTML = "";
     paymentClientSelect.innerHTML = "";
@@ -117,18 +116,16 @@ function showPopup(popupId) {
     const popup = document.getElementById(popupId);
     if (popup) {
         popup.style.display = 'block';
-        document.querySelector('.popups').style.display = 'block';
     }
 }
 
 // Функция для закрытия попапов
 function closePopups() {
     document.getElementById('popupsContainer').style.display = 'none';
-    document.querySelector('.popups').style.display = 'none';
+    document.querySelector('.popups').style.display = 'none'; //  добавлено для скрытия .popups
     const popups = document.querySelectorAll('.popup');
     popups.forEach(popup => popup.style.display = 'none');
 }
-
 
 
 // Функции для работы с тренировками
@@ -155,6 +152,7 @@ function addWorkout(event) {
     closePopups();
 }
 
+
 function renderWorkoutsTable() {
     workoutTable.innerHTML = "";
     const workouts = getWorkouts();
@@ -174,6 +172,7 @@ function renderWorkoutsTable() {
         });
         completedCell.appendChild(checkbox);
 
+
         const deleteCell = newRow.insertCell();
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "X";
@@ -184,30 +183,39 @@ function renderWorkoutsTable() {
             }
         });
         deleteCell.appendChild(deleteBtn);
-
-
     });
 }
+
 
 function toggleWorkoutCompletion(workoutId) {
     const workouts = getWorkouts();
     const workoutIndex = workouts.findIndex(workout => workout.id === workoutId);
+
 
     if (workoutIndex !== -1) {
         const workout = workouts[workoutIndex];
         workout.completed = !workout.completed;
         saveWorkouts(workouts);
 
+
         const clients = getClients();
         const clientIndex = clients.findIndex(client => client.lastName === workout.clientName);
 
-        if (clientIndex !== -1 && clients[clientIndex].paymentType === 'direct') {
-            const workoutCost = parseFloat(workoutCostInput.value) || 0;
-            clients[clientIndex].balance += (workout.completed ? -workoutCost : workoutCost);
-            saveClients(clients);
-            renderClientsTable();
+
+        if (clientIndex !== -1) {
+            const workoutCost = parseFloat(workoutCostInput.value);
+            if (isNaN(workoutCost)) {
+                alert("Введите корректную стоимость тренировки");
+                return;
+            }
+            if (clients[clientIndex].paymentType === 'direct') {
+                clients[clientIndex].balance += (workout.completed ? -workoutCost : workoutCost);
+                saveClients(clients);
+                renderClientsTable();
+            }
         }
     }
+
 
     renderWorkoutsTable();
 }
@@ -217,22 +225,24 @@ function toggleWorkoutCompletion(workoutId) {
 function addPayment(event) {
     event.preventDefault();
 
-    const clientName = document.getElementById("paymentClient").value;
-    const paymentDate = document.getElementById("paymentDate").value;
-    const paymentType = document.getElementById("paymentTypeAdd").value;
     const paymentAmount = parseFloat(document.getElementById("paymentAmount").value);
+    if (isNaN(paymentAmount)) {
+        alert("Введите корректную сумму платежа.");
+        return;
+    }
 
     const payments = getPayments();
     const newPayment = {
-        clientName,
-        paymentDate,
-        paymentType,
-        paymentAmount,
+        id: Date.now(),
+        clientName: document.getElementById("paymentClient").value,
+        paymentDate: document.getElementById("paymentDate").value,
+        paymentType: document.getElementById("paymentTypeAdd").value,
+        paymentAmount: paymentAmount
     };
     payments.push(newPayment);
     savePayments(payments);
 
-    updateClientBalance(clientName, paymentAmount, "add");
+    updateClientBalance(newPayment.clientName, newPayment.paymentAmount, newPayment.paymentType, "add");
 
     renderPaymentsTable();
     addPaymentForm.reset();
@@ -244,7 +254,7 @@ function renderPaymentsTable() {
     paymentTable.innerHTML = "";
     const payments = getPayments();
 
-    payments.forEach((payment, index) => {
+    payments.forEach((payment) => {
         const newRow = paymentTable.insertRow();
         newRow.insertCell().textContent = payment.paymentDate;
         newRow.insertCell().textContent = payment.clientName;
@@ -256,30 +266,35 @@ function renderPaymentsTable() {
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "X";
         deleteBtn.classList.add("delete-btn");
+
         deleteBtn.addEventListener("click", () => {
-            if (confirm("Вы уверены, что хотите удалить этот платеж?")) {
-                deletePayment(index);
+            if (confirm("Вы уверены, что хотите удалить этот платёж?")) {
+                deletePayment(payment.id);
             }
         });
         deleteCell.appendChild(deleteBtn);
+
     });
 }
 
 // Функция для обновления баланса клиента
-function updateClientBalance(clientName, amount, operation) {
+function updateClientBalance(clientName, amount, paymentType, operation) {
     const clients = getClients();
     const clientIndex = clients.findIndex(client => client.lastName === clientName);
 
     if (clientIndex !== -1) {
-        if (operation === "add") {
-            clients[clientIndex].balance += amount;
-        } else if (operation === "subtract") {
-            clients[clientIndex].balance -= amount;
+        if (paymentType === "direct") {
+            if (operation === "add") {
+                clients[clientIndex].balance += amount;
+            } else if (operation === "subtract") {
+                clients[clientIndex].balance -= amount;
+            }
         }
         saveClients(clients);
         renderClientsTable();
     }
 }
+
 
 
 // Функции для удаления данных
@@ -292,22 +307,20 @@ function deleteClient(index) {
     updateClientSelects();
 
 
-      // Удаляем тренировки и платежи удаленного клиента
-      const workouts = getWorkouts().filter(workout => workout.clientName !== deletedClient.lastName);
-      saveWorkouts(workouts);
-      renderWorkoutsTable();
+    // Удаляем тренировки и платежи удаленного клиента
+    const workouts = getWorkouts().filter(workout => workout.clientName !== deletedClient.lastName);
+    saveWorkouts(workouts);
+    renderWorkoutsTable();
 
-      const payments = getPayments().filter(payment => payment.clientName !== deletedClient.lastName);
-      savePayments(payments);
-      renderPaymentsTable();
+    const payments = getPayments().filter(payment => payment.clientName !== deletedClient.lastName);
+    savePayments(payments);
+    renderPaymentsTable();
 }
-
 
 
 function deleteWorkout(workoutId) {
     const workouts = getWorkouts();
     const workoutIndex = workouts.findIndex(workout => workout.id === workoutId);
-
 
     if (workoutIndex !== -1) {
         const deletedWorkout = workouts[workoutIndex];
@@ -325,30 +338,32 @@ function deleteWorkout(workoutId) {
                 renderClientsTable();
             }
         }
+
+        renderWorkoutsTable();
     }
-    renderWorkoutsTable();
 }
 
-function deletePayment(index) {
+
+
+function deletePayment(paymentId) {
     const payments = getPayments();
-    const deletedPayment = payments[index];
-    payments.splice(index, 1);
-    savePayments(payments);
+    const paymentIndex = payments.findIndex(payment => payment.id === paymentId);
 
 
-    const clients = getClients();
-    const clientIndex = clients.findIndex(client => client.lastName === deletedPayment.clientName);
+    if (paymentIndex !== -1) {
+        const deletedPayment = payments[paymentIndex];
+        payments.splice(paymentIndex, 1);
+        savePayments(payments);
 
 
-    if (clientIndex !== -1) {
-        clients[clientIndex].balance -= deletedPayment.paymentAmount;
-        saveClients(clients);
-        renderClientsTable();
+        updateClientBalance(deletedPayment.clientName, deletedPayment.paymentAmount, deletedPayment.paymentType, "subtract");
+        renderPaymentsTable();
     }
-
-
-    renderPaymentsTable();
 }
+
+
+
+
 
 // Обработчики событий
 addClientBtn.addEventListener("click", () => showPopup('addClientPopup'));
@@ -360,6 +375,7 @@ addWorkoutForm.addEventListener("submit", addWorkout);
 addPaymentBtn.addEventListener("click", () => showPopup('addPaymentPopup'));
 addPaymentForm.addEventListener("submit", addPayment);
 
+
 // Инициализация
 renderClientsTable();
 updateClientSelects();
@@ -367,10 +383,16 @@ renderWorkoutsTable();
 renderPaymentsTable();
 
 
+
 // Перемещаем попапы в контейнер
 const popupsContainer = document.getElementById('popupsContainer');
 const popups = document.querySelector('.popups');
+while (popups.firstChild) {
+    popupsContainer.appendChild(popups.firstChild);
+}
 
-if (popups.firstChild) {
-  popupsContainer.appendChild(popups.firstChild);
+// Удаляем дублирующуюся кнопку "Отмена"
+const cancelButtons = addClientPopup.querySelectorAll("button[onclick='closePopups()']");
+if (cancelButtons.length > 1) {
+    cancelButtons[1].remove();
 }
